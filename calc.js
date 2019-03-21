@@ -1,3 +1,23 @@
+let input = "";
+
+const display = document.querySelector('#display');
+
+const number = document.querySelectorAll('.num');
+number.forEach((button) => {
+  	button.addEventListener('click', (e) => {
+    	input += button.id;
+		document.getElementById("display").innerHTML = input;
+  	});
+});
+
+const operator = document.querySelectorAll('.op');
+operator.forEach((button) => {
+  	button.addEventListener('click', (e) => {
+    	input += button.id;
+		document.getElementById("display").innerHTML = input;
+  	});
+});
+
 function add(x, y) {
 	return Number(x) + Number(y);
 }
