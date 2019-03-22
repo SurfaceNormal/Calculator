@@ -1,22 +1,73 @@
-let input = "";
-
-const display = document.querySelector('#display');
+let input = [];
+let current = "";
+let isEval = false;
 
 const number = document.querySelectorAll('.num');
 number.forEach((button) => {
   	button.addEventListener('click', (e) => {
-    	input += button.id;
-		document.getElementById("display").innerHTML = input;
+  		if (isEval) {
+  			current = "";
+  			isEval = false;
+  		}
+  		current += button.id;
+		document.getElementById("number").innerHTML = current;
   	});
 });
 
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-    	input += button.id;
-		document.getElementById("display").innerHTML = input;
+  		if (current.length > 0) {
+  			if (!isNaN(input[input.length-1])) {
+  				input = [];
+  			}
+  			input.push(current);
+  		}
+    	if (!isNaN(input[input.length-1])) {
+			input.push(button.id);
+			document.getElementById("expression").innerHTML = input.join(" ");
+			current = "";
+    	}
   	});
 });
+
+const decimal = document.querySelector('#decimal');
+decimal.addEventListener('click', (e) => {
+    if (isWithoutDec()) {
+    	current += ".";
+		document.getElementById("number").innerHTML = current;
+    }
+});
+
+const equals = document.querySelector('#equals');
+equals.addEventListener('click', (e) => {
+	input.push(current);
+	current = evalPostFix(reversePolish(input));
+	document.getElementById("expression").innerHTML = input.join(" ");
+	document.getElementById("number").innerHTML = current;
+	isEval = true;
+});
+
+const clear = document.querySelector('#C');
+clear.addEventListener('click', (e) => {
+	input = [];
+	current = "";
+	document.getElementById("expression").innerHTML = input;
+	document.getElementById("number").innerHTML = current;
+});
+
+function isWithoutDec() {
+	let num = current.split();
+    let i = num.length - 1;
+
+    while (num.length > 0 && !num[i].match(/[~*/+-]/)) {
+    	if (num[i] == '.') {
+    		return false;
+    	}
+		i--;
+    }
+    return true;
+}
 
 function add(x, y) {
 	return Number(x) + Number(y);
@@ -71,7 +122,8 @@ function evalPostFix(expression) {
 }
 
 function reversePolish(expression) { // Dijkstra's "Shunting Yard" Algorithm to parse infix expression to postfix
-	let expr = (expression + ")").split("");
+	let expr = expression;
+	expr.push(")");
 
 	let opStack = ["("];
 	let postFix = [];
@@ -101,6 +153,7 @@ function reversePolish(expression) { // Dijkstra's "Shunting Yard" Algorithm to 
 			postFix.push(expr[i]);
 		}
 	}
+	expr.pop();
 	return postFix;
 }
 
