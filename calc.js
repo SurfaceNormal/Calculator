@@ -5,10 +5,7 @@ let isEval = false;
 const number = document.querySelectorAll('.num');
 number.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (isEval) {
-  			current = "";
-  			isEval = false;
-  		}
+
   		current += button.id;
 		document.getElementById("number").innerHTML = current;
   	});
@@ -17,23 +14,41 @@ number.forEach((button) => {
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (current.length > 0) {
-  			if (!isNaN(input[input.length-1])) {
-  				input = [];
-  			}
+  		if (input.length == 0) { // Starting on an empty expression
   			input.push(current);
-  		}
-    	if (!isNaN(input[input.length-1])) {
+  			input.push(button.id);
+			document.getElementById("expression").innerHTML = input.join(" ");
+			current = "";
+			document.getElementById("number").innerHTML = current;
+  		} else if (isEval) { // Reuse result of last calculation
+  			input = [];
+  			input.push(current);
+  			input.push(button.id);
+  			document.getElementById("expression").innerHTML = input.join(" ");
+			current = "";
+			document.getElementById("number").innerHTML = current;
+			isEval = false;
+  		} else if (isNaN(input[input.length-1]) && current != "") { // Chain operations if a number will be added to expression
+  			input.push(current);
+  			input.push(button.id);
+			document.getElementById("expression").innerHTML = input.join(" ");
+			current = "";
+			document.getElementById("number").innerHTML = current;
+  		} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
 			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
+			document.getElementById("number").innerHTML = current;
     	}
   	});
 });
 
 const decimal = document.querySelector('#decimal');
 decimal.addEventListener('click', (e) => {
-    if (isWithoutDec()) {
+	if (current == "") {
+		current = "0.";
+		document.getElementById("number").innerHTML = current;
+	} else if (isWithoutDec()) {
     	current += ".";
 		document.getElementById("number").innerHTML = current;
     }
@@ -41,30 +56,29 @@ decimal.addEventListener('click', (e) => {
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
-	input.push(current);
-	current = evalPostFix(reversePolish(input));
-	document.getElementById("expression").innerHTML = input.join(" ");
-	document.getElementById("number").innerHTML = current;
-	isEval = true;
+	if (isNaN(input[input.length-1]) && current != "") {
+		input.push(current);
+		current = evalPostFix(reversePolish(input));
+		document.getElementById("expression").innerHTML = input.join(" ");
+		document.getElementById("number").innerHTML = current;
+		isEval = true;
+	}
 });
 
 const clear = document.querySelector('#C');
 clear.addEventListener('click', (e) => {
 	input = [];
 	current = "";
-	document.getElementById("expression").innerHTML = input;
+	document.getElementById("expression").innerHTML = input.join(" ");
 	document.getElementById("number").innerHTML = current;
 });
 
-function isWithoutDec() {
-	let num = current.split();
-    let i = num.length - 1;
-
-    while (num.length > 0 && !num[i].match(/[~*/+-]/)) {
+function isWithoutDec() { // Check sequence for prior decimal point
+	let num = current.split("");
+    for (let i = 0; i < num.length; i++) {
     	if (num[i] == '.') {
     		return false;
     	}
-		i--;
     }
     return true;
 }
@@ -144,7 +158,7 @@ function reversePolish(expression) { // Dijkstra's "Shunting Yard" Algorithm to 
 				postFix.push(opStack.pop());
 			}
 			opStack.pop();
-		} else if (expr[i].match(/[~*/+-]/)) { // Case: operator
+		} else if (isNaN(expr[i])) { // Case: operator
 			while (opStack.length > 0 && isHigherPrec(expr[i], opStack[opStack.length-1])) {
 				postFix.push(opStack.pop());
 			}
