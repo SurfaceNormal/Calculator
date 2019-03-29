@@ -5,40 +5,56 @@ let isEval = false;
 const number = document.querySelectorAll('.num');
 number.forEach((button) => {
   	button.addEventListener('click', (e) => {
+  		if (isEval) { // Appending a number to the result of the last calculation
+  			if (current == "Undefined") {
+  				current = "";
+  			}
 
-  		current += button.id;
-		document.getElementById("number").innerHTML = current;
+  			input = [];
+  			document.getElementById("result").innerHTML = "";
+  			isEval = false;
+  		}
+		current += button.id;
+		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
   	});
 });
 
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (input.length == 0) { // Starting on an empty expression
+  		if (input.length == 0 && current != "") { // Starting on an empty expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
-			document.getElementById("number").innerHTML = current;
+			document.getElementById("result").innerHTML = current;
   		} else if (isEval) { // Reuse result of last calculation
-  			input = [];
-  			input.push(current);
-  			input.push(button.id);
-  			document.getElementById("expression").innerHTML = input.join(" ");
-			current = "";
-			document.getElementById("number").innerHTML = current;
-			isEval = false;
+  			isEval = false;
+
+  			if (current == "Undefined") {
+  				current = "";
+  				input = [];
+  				document.getElementById("expression").innerHTML = input.join(" ");
+  				document.getElementById("result").innerHTML = current;
+  			} else {
+ 				input = [];
+  				input.push(current);
+  				input.push(button.id);
+  				document.getElementById("expression").innerHTML = input.join(" ");
+				current = "";
+				document.getElementById("result").innerHTML = current;
+  			}
   		} else if (isNaN(input[input.length-1]) && current != "") { // Chain operations if a number will be added to expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
-			document.getElementById("number").innerHTML = current;
+			document.getElementById("result").innerHTML = current;
   		} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
 			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
-			document.getElementById("number").innerHTML = current;
+			document.getElementById("result").innerHTML = current;
     	}
   	});
 });
@@ -47,20 +63,27 @@ const decimal = document.querySelector('#decimal');
 decimal.addEventListener('click', (e) => {
 	if (current == "") {
 		current = "0.";
-		document.getElementById("number").innerHTML = current;
+		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
 	} else if (isWithoutDec()) {
     	current += ".";
-		document.getElementById("number").innerHTML = current;
+		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
     }
 });
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
-	if (isNaN(input[input.length-1]) && current != "") {
+	if (isNaN(input[input.length-1]) && current != "") { // Allow evaluation if expression ends in operator and number
 		input.push(current);
 		current = evalPostFix(reversePolish(input));
+
+		if (current != "Undefined") { // Round long floats
+			if (precision(Number(current)) > 15) {
+				current = parseFloat(current).toFixed(15);
+			}
+		}
+
 		document.getElementById("expression").innerHTML = input.join(" ");
-		document.getElementById("number").innerHTML = current;
+		document.getElementById("result").innerHTML = current;
 		isEval = true;
 	}
 });
@@ -70,7 +93,7 @@ clear.addEventListener('click', (e) => {
 	input = [];
 	current = "";
 	document.getElementById("expression").innerHTML = input.join(" ");
-	document.getElementById("number").innerHTML = current;
+	document.getElementById("result").innerHTML = current;
 });
 
 function isWithoutDec() { // Check sequence for prior decimal point
@@ -83,6 +106,15 @@ function isWithoutDec() { // Check sequence for prior decimal point
     return true;
 }
 
+function precision(num) {
+  	let e = 1, p = 0;
+  	while (Math.round(num * e) / e !== num) { 
+  		e *= 10; 
+  		p++; 
+  	}
+  	return p;
+}
+
 function add(x, y) {
 	return Number(x) + Number(y);
 }
@@ -92,7 +124,7 @@ function subtract(x, y) {
 }
 
 function multiply(x, y) {
-	return  x * y;
+	return x * y;
 }
 
 function divide(x, y) {
