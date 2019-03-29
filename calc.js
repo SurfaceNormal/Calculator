@@ -22,7 +22,7 @@ number.forEach((button) => {
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (input.length == 0 && current != "") { // Starting on an empty expression
+  		if (input.length == 0 && current != "" && current.slice(-1) != ".") { // Starting on an empty expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
@@ -44,7 +44,7 @@ operator.forEach((button) => {
 				current = "";
 				document.getElementById("result").innerHTML = current;
   			}
-  		} else if (isNaN(input[input.length-1]) && current != "") { // Chain operations if a number will be added to expression
+  		} else if (isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { // Chain operations if a number will be added to expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
@@ -72,7 +72,7 @@ decimal.addEventListener('click', (e) => {
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
-	if (isNaN(input[input.length-1]) && current != "") { // Allow evaluation if expression ends in operator and number
+	if (isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { // Allow evaluation if expression ends in operator and number
 		input.push(current);
 		current = evalPostFix(reversePolish(input));
 
