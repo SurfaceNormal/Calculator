@@ -78,7 +78,7 @@ equals.addEventListener('click', (e) => {
 
 		if (current != "Undefined") { // Round long floats
 			if (precision(Number(current)) > 15) {
-				current = parseFloat(current).toFixed(15);
+				current = Math.round(current * 1000000000000000) / 1000000000000000;
 			}
 		}
 
@@ -94,6 +94,17 @@ clear.addEventListener('click', (e) => {
 	current = "";
 	document.getElementById("expression").innerHTML = input.join(" ");
 	document.getElementById("result").innerHTML = current;
+});
+
+const backspace = document.querySelector('#CE');
+backspace.addEventListener('click', (e) => {
+	if (current != "") {
+		current = current.slice(0,-1);
+		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
+	} else if (input.length > 0) {
+		input.pop();
+		document.getElementById("expression").innerHTML = input.join(" ");
+	}
 });
 
 function isWithoutDec() { // Check sequence for prior decimal point
