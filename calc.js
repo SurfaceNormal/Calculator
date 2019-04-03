@@ -5,6 +5,10 @@ let isEval = false;
 const number = document.querySelectorAll('.num');
 number.forEach((button) => {
   	button.addEventListener('click', (e) => {
+  		if (input[input.length-1] == ")") {
+  			input.push("*");
+  		}
+
   		if (isEval) { // Appending a number to the result of the last calculation
   			if (current == "Undefined") {
   				current = "";
@@ -22,7 +26,7 @@ number.forEach((button) => {
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (input.length == 0 && current != "" && current.slice(-1) != ".") { // Starting on an empty expression
+  		if (input.length == 0 && current != "" && current.slice(-1) != ".") { // Starting an expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
@@ -50,6 +54,9 @@ operator.forEach((button) => {
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
 			document.getElementById("result").innerHTML = current;
+		} else if (input[input.length-1] == ')') {
+			input.push(button.id);
+			document.getElementById("expression").innerHTML = input.join(" ");
   		} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
 			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
@@ -72,15 +79,27 @@ decimal.addEventListener('click', (e) => {
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
-	if (isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { // Allow evaluation if expression ends in operator and number
+	if (input[input.length-1] != '(' && isNaN(input[input.length-1]) && current != "" && !isNaN(current.slice(-1))) { // Allow evaluation if expression ends in operator and number
 		input.push(current);
 		current = evalPostFix(reversePolish(input));
 
-		if (current != "Undefined") { // Round long floats
+		/*if (current != "Undefined") { // Round long floats
 			if (precision(Number(current)) > 15) {
 				current = Math.round(current * 1000000000000000) / 1000000000000000;
 			}
-		}
+		} */
+
+		document.getElementById("expression").innerHTML = input.join(" ");
+		document.getElementById("result").innerHTML = current;
+		isEval = true;
+	} else if (isBalancedParen() && input[input.length-1] == ')' || isBalancedParen() && !isNaN(input[input.length-1])) {
+		current = evalPostFix(reversePolish(input));
+
+		/*if (current != "Undefined") { // Round long floats
+			if (precision(Number(current)) > 15) {
+				current = Math.round(current * 1000000000000000) / 1000000000000000;
+			}
+		}*/
 
 		document.getElementById("expression").innerHTML = input.join(" ");
 		document.getElementById("result").innerHTML = current;
@@ -92,20 +111,90 @@ const clear = document.querySelector('#C');
 clear.addEventListener('click', (e) => {
 	input = [];
 	current = "";
+
 	document.getElementById("expression").innerHTML = input.join(" ");
 	document.getElementById("result").innerHTML = current;
 });
 
 const backspace = document.querySelector('#CE');
 backspace.addEventListener('click', (e) => {
-	if (current != "") {
+	if (isEval) {
+		input = [];
+  		document.getElementById("result").innerHTML = "";
+  		
+		current = current.toString().slice(0,-1);
+		document.getElementById("expression").innerHTML = current;
+
+		isEval = false;
+	} else if (current != "") {
 		current = current.slice(0,-1);
 		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
 	} else if (input.length > 0) {
 		input.pop();
 		document.getElementById("expression").innerHTML = input.join(" ");
+
+		if (!isNaN(input[input.length-1])) { // Now editing a prior Number
+			current = input.pop();
+		}
 	}
 });
+
+const paren = document.querySelector('#paren');
+paren.addEventListener('click', (e) => {
+	if (isEval) {
+		if (current == "Undefined") {
+  			current = "";
+  			input = [];
+
+  			input.push("(");
+  		} else {
+  			input = [];
+  			input.push(current);
+  			current = "";
+
+  			input.push("*");
+  			input.push("(");
+  		}
+  		document.getElementById("result").innerHTML = "";
+  		document.getElementById("expression").innerHTML = input.join(" ");
+		isEval = false;
+	} else if (input[input.length-1] == ')') {
+		if (!isBalancedParen()) {
+			input.push(')');
+		} else {
+			input.push('*');
+			input.push('(');
+		}
+
+		document.getElementById("expression").innerHTML = input.join(" ");
+	} else if (!isBalancedParen() && isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { 
+		input.push(current);
+		current = "";
+		input.push(')');
+		document.getElementById("expression").innerHTML = input.join(" ");
+	} else {
+		if (current != "" && current.slice(-1) != ".") {
+			input.push(current);
+			current = "";
+
+			input.push('*');
+		} 
+		input.push('(');
+		document.getElementById("expression").innerHTML = input.join(" ");
+	} 
+});
+
+function isBalancedParen() {
+	let stack = [];
+	for (let i = 0; i < input.length; i++) {
+		if (input[i] == '(') {
+			stack.push('(');
+		} else if (stack.length > 0 && input[i] == ')') {
+			stack.pop();
+		}
+	}
+	return stack.length == 0;
+}
 
 function isWithoutDec() { // Check sequence for prior decimal point
 	let num = current.split("");
