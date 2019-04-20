@@ -1,11 +1,11 @@
-let input = [];
-let current = "";
-let isEval = false;
+let input = []; // Array containing input expression
+let current = ""; // Current number being built up with digits, to be placed within expression
+let isEval = false; // Flag for succesfully calculated expression (being reused)
 
 const number = document.querySelectorAll('.num');
 number.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (input[input.length-1] == ")") {
+  		if (input[input.length-1] == ")") { // Multiplication of a new number
   			input.push("*");
   		}
 
@@ -26,13 +26,7 @@ number.forEach((button) => {
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (input.length == 0 && current != "" && current.slice(-1) != ".") { // Starting an expression
-  			input.push(current);
-  			input.push(button.id);
-			document.getElementById("expression").innerHTML = input.join(" ");
-			current = "";
-			document.getElementById("result").innerHTML = current;
-  		} else if (isEval) { // Reuse result of last calculation
+  		if (isEval) { // Reuse result of last calculation
   			isEval = false;
 
   			if (current == "Undefined") {
@@ -48,13 +42,14 @@ operator.forEach((button) => {
 				current = "";
 				document.getElementById("result").innerHTML = current;
   			}
-  		} else if (isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { // Chain operations if a number will be added to expression
+  		} else if ( (input.length == 0 || isNaN(input[input.length-1])) && current != "" && current.slice(-1) != ".") { 
+  			// Starting a new expression or chaining a new operator to the expression
   			input.push(current);
   			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
 			current = "";
 			document.getElementById("result").innerHTML = current;
-		} else if (input[input.length-1] == ')') {
+  		} else if (input[input.length-1] == ')') {
 			input.push(button.id);
 			document.getElementById("expression").innerHTML = input.join(" ");
   		} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
@@ -79,8 +74,15 @@ decimal.addEventListener('click', (e) => {
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
-	if (input[input.length-1] != '(' && isNaN(input[input.length-1]) && current != "" && !isNaN(current.slice(-1))) { // Allow evaluation if expression ends in operator and number
-		input.push(current);
+	// Allow evaluation if expression ends in ')' OR an operator and number 
+	if ( input[input.length-1] == ')' || isNaN(input[input.length-1]) && current != "" && !isNaN(current.slice(-1))) { 
+		if (current != "") {
+			input.push(current);
+		}
+
+		while (!isBalancedParen()) {
+			input.push(')');
+		}
 		current = evalPostFix(reversePolish(input));
 
 		/*if (current != "Undefined") { // Round long floats
@@ -92,19 +94,19 @@ equals.addEventListener('click', (e) => {
 		document.getElementById("expression").innerHTML = input.join(" ");
 		document.getElementById("result").innerHTML = current;
 		isEval = true;
-	} else if (isBalancedParen() && input[input.length-1] == ')' || isBalancedParen() && !isNaN(input[input.length-1])) {
+	} /* else if (isBalancedParen() && input[input.length-1] == ')' || isBalancedParen() && !isNaN(input[input.length-1])) {
 		current = evalPostFix(reversePolish(input));
 
 		/*if (current != "Undefined") { // Round long floats
 			if (precision(Number(current)) > 15) {
 				current = Math.round(current * 1000000000000000) / 1000000000000000;
 			}
-		}*/
+		}
 
 		document.getElementById("expression").innerHTML = input.join(" ");
 		document.getElementById("result").innerHTML = current;
 		isEval = true;
-	}
+	} */
 });
 
 const clear = document.querySelector('#C');
@@ -118,7 +120,7 @@ clear.addEventListener('click', (e) => {
 
 const backspace = document.querySelector('#CE');
 backspace.addEventListener('click', (e) => {
-	if (isEval) {
+	if (isEval) { // Backspace once on the recent calculation
 		input = [];
   		document.getElementById("result").innerHTML = "";
   		
@@ -126,7 +128,7 @@ backspace.addEventListener('click', (e) => {
 		document.getElementById("expression").innerHTML = current;
 
 		isEval = false;
-	} else if (current != "") {
+	} else if (current != "") { // Backspace once on the current, most recent number
 		current = current.slice(0,-1);
 		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
 	} else if (input.length > 0) {
@@ -141,7 +143,7 @@ backspace.addEventListener('click', (e) => {
 
 const paren = document.querySelector('#paren');
 paren.addEventListener('click', (e) => {
-	if (isEval) {
+	if (isEval) { // Reusing prior calculation
 		if (current == "Undefined") {
   			current = "";
   			input = [];
@@ -158,21 +160,21 @@ paren.addEventListener('click', (e) => {
   		document.getElementById("result").innerHTML = "";
   		document.getElementById("expression").innerHTML = input.join(" ");
 		isEval = false;
-	} else if (input[input.length-1] == ')') {
+	} else if (input[input.length-1] == ')') { // Determine whether nested parenthesis exist
 		if (!isBalancedParen()) {
 			input.push(')');
 		} else {
 			input.push('*');
 			input.push('(');
 		}
-
 		document.getElementById("expression").innerHTML = input.join(" ");
 	} else if (!isBalancedParen() && isNaN(input[input.length-1]) && current != "" && current.slice(-1) != ".") { 
+		// Close parenthesis on non-nested parenthetical expression
 		input.push(current);
 		current = "";
 		input.push(')');
 		document.getElementById("expression").innerHTML = input.join(" ");
-	} else {
+	} else { // Default: create a new multiplication op with an existing number or place open parenthesis
 		if (current != "" && current.slice(-1) != ".") {
 			input.push(current);
 			current = "";
