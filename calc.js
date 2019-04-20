@@ -23,59 +23,76 @@ number.forEach((button) => {
   	});
 });
 
+const unary = document.querySelector('#unary');
+unary.addEventListener('click', (e) => {
+	if (current != "Undefined") {
+		if (isEval) {
+  			input = [];
+  			document.getElementById("result").innerHTML = "";
+  			isEval = false;
+  		}
+
+		if (current != "") {
+			if (current.toString().indexOf("-") == -1) {
+				current = "-" + current;
+			} else {
+				current = current.toString().slice(1);
+			}
+			document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
+		} 
+	}
+});
+
 const operator = document.querySelectorAll('.op');
 operator.forEach((button) => {
   	button.addEventListener('click', (e) => {
-  		if (isEval) { // Reuse result of last calculation
-  			isEval = false;
-
-  			if (current == "Undefined") {
-  				current = "";
-  				input = [];
-  				document.getElementById("expression").innerHTML = input.join(" ");
-  				document.getElementById("result").innerHTML = current;
-  			} else {
+  		if (current != "Undefined") {
+  			if (isEval) { // Reuse result of last calculation
+  				isEval = false;
+  			
  				input = [];
   				input.push(current);
   				input.push(button.id);
   				document.getElementById("expression").innerHTML = input.join(" ");
 				current = "";
 				document.getElementById("result").innerHTML = current;
-  			}
-  		} else if ( (input.length == 0 || isNaN(input[input.length-1])) && current != "" && current.slice(-1) != ".") { 
-  			// Starting a new expression or chaining a new operator to the expression
-  			input.push(current);
-  			input.push(button.id);
-			document.getElementById("expression").innerHTML = input.join(" ");
-			current = "";
-			document.getElementById("result").innerHTML = current;
-  		} else if (input[input.length-1] == ')') {
-			input.push(button.id);
-			document.getElementById("expression").innerHTML = input.join(" ");
-  		} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
-			input.push(button.id);
-			document.getElementById("expression").innerHTML = input.join(" ");
-			current = "";
-			document.getElementById("result").innerHTML = current;
-    	}
+  			} else if ( (input.length == 0 || isNaN(input[input.length-1])) && current != "" && current.slice(-1) != ".") { 
+  				// Starting a new expression or chaining a new operator to the expression
+	  			input.push(current);
+	  			input.push(button.id);
+				document.getElementById("expression").innerHTML = input.join(" ");
+				current = "";
+				document.getElementById("result").innerHTML = current;
+  			} else if (input[input.length-1] == ')') {
+				input.push(button.id);
+				document.getElementById("expression").innerHTML = input.join(" ");
+  			} else if (!isNaN(input[input.length-1])) { // End of expression doesn't contain operator or symbol
+				input.push(button.id);
+				document.getElementById("expression").innerHTML = input.join(" ");
+				current = "";
+				document.getElementById("result").innerHTML = current;
+	    	}
+  		}
   	});
 });
 
 const decimal = document.querySelector('#decimal');
 decimal.addEventListener('click', (e) => {
-	if (current == "") {
-		current = "0.";
-		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
-	} else if (isWithoutDec()) {
-    	current += ".";
-		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
-    }
+	if (current != "Undefined") {
+		if (current == "") {
+			current = "0.";
+			document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
+		} else if (isWithoutDec()) {
+	    	current += ".";
+			document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
+	    }
+	}
 });
 
 const equals = document.querySelector('#equals');
 equals.addEventListener('click', (e) => {
 	// Allow evaluation if expression ends in ')' OR an operator and number 
-	if ( input[input.length-1] == ')' || isNaN(input[input.length-1]) && current != "" && !isNaN(current.slice(-1))) { 
+	if (!isEval && input[input.length-1] == ')' || isNaN(input[input.length-1]) && current != "" && !isNaN(current.slice(-1))) { 
 		if (current != "") {
 			input.push(current);
 		}
@@ -83,6 +100,7 @@ equals.addEventListener('click', (e) => {
 		while (!isBalancedParen()) {
 			input.push(')');
 		}
+
 		current = evalPostFix(reversePolish(input));
 
 		/*if (current != "Undefined") { // Round long floats
@@ -124,12 +142,23 @@ backspace.addEventListener('click', (e) => {
 		input = [];
   		document.getElementById("result").innerHTML = "";
   		
-		current = current.toString().slice(0,-1);
-		document.getElementById("expression").innerHTML = current;
+  		if (current == "Undefined") {
+  			current = "";
+  		} else if (current.toString().length == 2 && current.toString().indexOf("-") != -1) {
+  			current = "";
+  		} else {
+  			current = current.toString().slice(0,-1);
+  		}
 
+		document.getElementById("expression").innerHTML = current;
 		isEval = false;
 	} else if (current != "") { // Backspace once on the current, most recent number
-		current = current.slice(0,-1);
+		if (current.toString().length == 2 && current.toString().indexOf("-") != -1) {
+  			current = "";
+  		} else {
+  			current = current.slice(0,-1);
+  		}
+
 		document.getElementById("expression").innerHTML = input.join(" ") + " " + current;
 	} else if (input.length > 0) {
 		input.pop();
