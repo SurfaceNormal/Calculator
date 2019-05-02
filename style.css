@@ -1,0 +1,40 @@
+body {
+    width: 33%;
+}
+
+button {
+    width: 25%;
+    height: 36px;
+    font-size: 18px;
+    margin: 0px;
+    float: left;
+    background-color: lightgray;
+    color: black;
+} 
+
+#display {
+    background-color: black;
+    color: lightblue;
+    border: solid; 
+    height: 96px; 
+    font-size: 20px;
+}
+
+#equals {
+    background-color: blue;
+    color: white;
+} 
+
+#C, #CE, #paren {
+    background-color: darkgray;
+    color: white;
+}
+
+#C {
+    color: darkorange;
+}
+
+.op {
+    background-color: darkgray;
+    color: white;
+}

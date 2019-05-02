@@ -8,8 +8,8 @@ Includes:
 - Decimal Points
 - (Matching) Parenthesis
 - Single Backspace deletion
+- Togglable unary +/- operator
 
 To be supported: 
-- Togglable unary +/- operator
 - Decimal rounding
 - Keyboard listeners

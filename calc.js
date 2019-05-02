@@ -289,9 +289,9 @@ function evalPostFix(expression) {
 	for (let i = 0; i < expression.length; i++)  {
 		if (!isNaN(expression[i])) {
 			operators.push(expression[i]); 
-		} else if (expression[i] == '~') { // Unary '-'
+		} /*else if (expression[i] == '~') { // Unary '-'
 			operators.push(-operators.pop())
-		} else {
+		} */else {
 			operators.push(operation(expression[i], operators.pop(), operators.pop()))
 		}
 	}
@@ -339,9 +339,9 @@ function isHigherPrec(token, stack) {
 }
 
 function precedence(op) {
-	if (op == '~') {
+	/*if (op == '~') {
 		return 3;
-	} else if (op == '*' || op == '/') {
+	} else */if (op == '*' || op == '/') {
 		return 2;
 	} else if (op == '+' || op == '-') {
 		return 1;
